@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>侨港旅游AI助手</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            font-size: 14px;
+            line-height: 1.5;
+            max-width: 414px;
+            margin: 0 auto;
+            padding-bottom: 60px;
+        }
+        
+        /* 恶劣天气提示 */
+        .weather-alert {
+            background-color: #ff9800;
+            color: white;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .weather-alert-icon {
+            font-size: 20px;
+            margin-right: 10px;
+            animation: pulse 2s infinite;
+        }
+        
+        .weather-alert-text {
+            flex: 1;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        
+        .weather-alert-arrow {
+            font-size: 16px;
+            margin-left: 10px;
+        }
+        
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+        
+        /* Banner */
+        .banner {
+            width: 100%;
+            height: 180px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .banner img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* 功能入口区 */
+        .function-area {
+            background-color: #fff;
+            border-radius: 10px;
+            margin: 15px 10px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .function-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .function-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+        
+        .function-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .function-icon {
+            width: 40px;
+            height: 40px;
+            background-color: #f0f8ff;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #0080ff;
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+        
+        .function-name {
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+        }
+        
+        /* 弹幕区域 */
+        .danmu-area {
+            background-color: #fff;
+            border-radius: 10px;
+            margin: 15px 10px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            position: relative;
+            height: 80px;
+            overflow: hidden;
+        }
+        
+        .danmu-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+            display: flex;
+            align-items: center;
+        }
+        
+        .danmu-title i {
+            color: #ff6b6b;
+            margin-right: 5px;
+            font-size: 18px;
+        }
+        
+        .danmu-content {
+            position: absolute;
+            top: 45px;
+            height: 30px;
+            width: 100%;
+        }
+        
+        .danmu-item {
+            position: absolute;
+            padding: 5px 12px;
+            background-color: rgba(0, 128, 255, 0.1);
+            border-radius: 15px;
+            white-space: nowrap;
+            font-size: 12px;
+            color: #0080ff;
+            animation: danmu 15s linear infinite;
+        }
+        
+        .danmu-item:nth-child(1) {
+            top: 0;
+            left: 100%;
+            animation-delay: 0s;
+        }
+        
+        .danmu-item:nth-child(2) {
+            top: 30px;
+            left: 100%;
+            animation-delay: 5s;
+        }
+        
+        @keyframes danmu {
+            from {
+                transform: translateX(0);
+            }
+            to {
+                transform: translateX(-500%);
+            }
+        }
+        
+        /* 溺水求救 */
+        .sos-area {
+            background-color: #ff6b6b;
+            border-radius: 10px;
+            margin: 15px 10px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            color: white;
+        }
+        
+        .sos-icon {
+            background-color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 15px;
+            color: #ff6b6b;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        
+        .sos-text {
+            flex-grow: 1;
+        }
+        
+        .sos-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .sos-desc {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        /* 公告列表 */
+        .notice-area {
+            background-color: #fff;
+            border-radius: 10px;
+            margin: 15px 10px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .notice-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .notice-title span {
+            display: flex;
+            align-items: center;
+        }
+        
+        .notice-title i {
+            color: #ff9800;
+            margin-right: 5px;
+            font-size: 18px;
+        }
+        
+        .notice-more {
+            font-size: 12px;
+            color: #999;
+            font-weight: normal;
+        }
+        
+        .notice-list {
+            list-style: none;
+        }
+        
+        .notice-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #f5f5f5;
+        }
+        
+        .notice-item:last-child {
+            border-bottom: none;
+        }
+        
+        .notice-item-title {
+            font-size: 14px;
+            margin-bottom: 5px;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .notice-item-meta {
+            font-size: 12px;
+            color: #999;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        /* 底部导航 */
+        .tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background-color: #fff;
+            display: flex;
+            box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.1);
+            max-width: 414px;
+            margin: 0 auto;
+        }
+        
+        .tab-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 10px;
+        }
+        
+        .tab-item.active {
+            color: #0080ff;
+        }
+        
+        .tab-icon {
+            font-size: 20px;
+            margin-bottom: 2px;
+        }
+        
+        /* 对话框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            width: 80%;
+            max-width: 300px;
+        }
+        
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 15px;
+            color: #ff6b6b;
+        }
+        
+        .modal-body {
+            margin-bottom: 20px;
+        }
+        
+        .phone-list {
+            list-style: none;
+        }
+        
+        .phone-item {
+            padding: 10px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #f5f5f5;
+        }
+        
+        .phone-item:last-child {
+            border-bottom: none;
+        }
+        
+        .phone-name {
+            font-size: 14px;
+            color: #333;
+        }
+        
+        .phone-number {
+            display: flex;
+            align-items: center;
+            color: #0080ff;
+        }
+        
+        .call-icon {
+            margin-left: 5px;
+            width: 20px;
+            height: 20px;
+            background-color: #0080ff;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+        
+        .modal-footer {
+            text-align: center;
+        }
+        
+        .close-btn {
+            background-color: #f5f5f5;
+            border: none;
+            color: #333;
+            padding: 8px 25px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        
+        /* 天气警告弹窗 */
+        .weather-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .weather-modal.active {
+            display: flex;
+        }
+        
+        .weather-modal-content {
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            width: 85%;
+            max-width: 350px;
+        }
+        
+        .weather-modal-title {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 15px;
+            color: #ff9800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .weather-modal-title-icon {
+            margin-right: 8px;
+            font-size: 22px;
+        }
+        
+        .weather-modal-body {
+            margin-bottom: 20px;
+        }
+        
+        .weather-info {
+            background-color: #fff9e6;
+            border-left: 4px solid #ff9800;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .weather-info-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #ff9800;
+        }
+        
+        .weather-info-content {
+            color: #666;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+        
+        .weather-info-time {
+            color: #999;
+            font-size: 12px;
+            margin-top: 5px;
+            text-align: right;
+        }
+        
+        .weather-modal-footer {
+            text-align: center;
+        }
+        
+        .weather-close-btn {
+            background-color: #ff9800;
+            border: none;
+            color: white;
+            padding: 8px 25px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://at.alicdn.com/t/font_3160431_0msrlcxyj5rh.css">
+</head>
+<body>
+    <!-- 恶劣天气提示 -->
+    <div class="weather-alert" id="weatherAlert">
+        <div class="weather-alert-icon">⚠️</div>
+        <div class="weather-alert-text">注意：今日部分景区暂时关闭，请留意通知</div>
+        <div class="weather-alert-arrow">></div>
+    </div>
+    
+    <!-- Banner区域 -->
+    <div class="banner">
+        <img src="https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fseopic.699pic.com%2Fphoto%2F50057%2F4108.jpg_wh1200.jpg&refer=http%3A%2F%2Fseopic.699pic.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1653810469&t=f032e9ef6c698a0bacdd3cb2bbf1c7ca" alt="侨港旅游风景">
+    </div>
+    
+    <!-- 功能入口区 -->
+    <div class="function-area">
+        <h3 class="function-title">便捷服务</h3>
+        <div class="function-grid">
+            <div class="function-item">
+                <div class="function-icon">🍜</div>
+                <div class="function-name">美食推荐</div>
+            </div>
+            <div class="function-item">
+                <div class="function-icon">🏞️</div>
+                <div class="function-name">景点推荐</div>
+            </div>
+            <div class="function-item">
+                <div class="function-icon">🏨</div>
+                <div class="function-name">酒店推荐</div>
+            </div>
+            <div class="function-item">
+                <div class="function-icon">🅿️</div>
+                <div class="function-name">停车场</div>
+            </div>
+            <div class="function-item">
+                <div class="function-icon">🌊</div>
+                <div class="function-name">潮汐表</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 弹幕区域 -->
+    <div class="danmu-area">
+        <div class="danmu-title">
+            <i class="iconfont icon-message"></i> 热门问题
+        </div>
+        <div class="danmu-content">
+            <div class="danmu-item">侨港哪里的海鲜好吃</div>
+            <div class="danmu-item">侨港旅游规划</div>
+        </div>
+    </div>
+    
+    <!-- 溺水求救 -->
+    <div class="sos-area" id="sosBtn">
+        <div class="sos-icon">🆘</div>
+        <div class="sos-text">
+            <div class="sos-title">溺水一键求救</div>
+            <div class="sos-desc">遇到紧急情况，请点击此处</div>
+        </div>
+    </div>
+    
+    <!-- 公告列表 -->
+    <div class="notice-area">
+        <div class="notice-title">
+            <span><i class="iconfont icon-notification"></i> 消息公告</span>
+            <div class="notice-more">更多 ></div>
+        </div>
+        <ul class="notice-list">
+            <li class="notice-item">
+                <div class="notice-item-title">侨港旅游节将于本周六盛大开幕，欢迎各位游客参加！</div>
+                <div class="notice-item-meta">
+                    <span>侨港旅游局</span>
+                    <span>2023-05-20</span>
+                </div>
+            </li>
+            <li class="notice-item">
+                <div class="notice-item-title">近期海域风浪较大，请游客注意安全，谨慎下水!</div>
+                <div class="notice-item-meta">
+                    <span>侨港安全办</span>
+                    <span>2023-05-18</span>
+                </div>
+            </li>
+            <li class="notice-item">
+                <div class="notice-item-title">侨港美食街新增5家特色餐厅，带来不一样的味蕾体验</div>
+                <div class="notice-item-meta">
+                    <span>侨港商会</span>
+                    <span>2023-05-15</span>
+                </div>
+            </li>
+        </ul>
+    </div>
+    
+    <!-- 底部导航 -->
+    <div class="tab-bar">
+        <div class="tab-item active">
+            <div class="tab-icon">🏠</div>
+            <div>首页</div>
+        </div>
+        <a href="shop.html" class="tab-item" style="text-decoration: none;">
+            <div class="tab-icon">🛒</div>
+            <div>商城</div>
+        </a>
+        <div class="tab-item">
+            <div class="tab-icon">🤖</div>
+            <div>AI助手</div>
+        </div>
+        <div class="tab-item">
+            <div class="tab-icon">📋</div>
+            <div>订单</div>
+        </div>
+        <div class="tab-item">
+            <div class="tab-icon">👤</div>
+            <div>我的</div>
+        </div>
+    </div>
+    
+    <!-- 恶劣天气弹窗 -->
+    <div class="weather-modal" id="weatherModal">
+        <div class="weather-modal-content">
+            <div class="weather-modal-title">
+                <span class="weather-modal-title-icon">⚠️</span>重要通知
+            </div>
+            <div class="weather-modal-body">
+                <div class="weather-info">
+                    <div class="weather-info-title">景区临时关闭通知</div>
+                    <div class="weather-info-content">
+                        由于近期强降雨天气，侨港海滩公园、滨海步道等景区临时关闭，预计明日恢复开放。请游客合理安排行程，注意安全。
+                    </div>
+                    <div class="weather-info-time">2023-05-21 08:30</div>
+                </div>
+                <div class="weather-info">
+                    <div class="weather-info-title">恶劣天气预警</div>
+                    <div class="weather-info-content">
+                        气象部门发布强风预警，侨港地区今日风力可达8-9级，请游客减少户外活动，远离海边等危险区域。
+                    </div>
+                    <div class="weather-info-time">2023-05-21 07:15</div>
+                </div>
+            </div>
+            <div class="weather-modal-footer">
+                <button class="weather-close-btn" id="closeWeatherModal">我知道了</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 溺水求救对话框 -->
+    <div class="modal" id="sosModal">
+        <div class="modal-content">
+            <div class="modal-title">紧急救援电话</div>
+            <div class="modal-body">
+                <ul class="phone-list">
+                    <li class="phone-item">
+                        <div class="phone-name">侨港海滩救援队</div>
+                        <div class="phone-number">120 <span class="call-icon">✆</span></div>
+                    </li>
+                    <li class="phone-item">
+                        <div class="phone-name">侨港消防部门</div>
+                        <div class="phone-number">119 <span class="call-icon">✆</span></div>
+                    </li>
+                    <li class="phone-item">
+                        <div class="phone-name">侨港警方</div>
+                        <div class="phone-number">110 <span class="call-icon">✆</span></div>
+                    </li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button class="close-btn" id="closeModal">关闭</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 恶劣天气弹窗
+        const weatherAlert = document.getElementById('weatherAlert');
+        const weatherModal = document.getElementById('weatherModal');
+        const closeWeatherModal = document.getElementById('closeWeatherModal');
+        
+        weatherAlert.addEventListener('click', function() {
+            weatherModal.classList.add('active');
+        });
+        
+        closeWeatherModal.addEventListener('click', function() {
+            weatherModal.classList.remove('active');
+        });
+        
+        // 溺水求救弹窗
+        const sosBtn = document.getElementById('sosBtn');
+        const sosModal = document.getElementById('sosModal');
+        const closeModal = document.getElementById('closeModal');
+        
+        sosBtn.addEventListener('click', function() {
+            sosModal.classList.add('active');
+        });
+        
+        closeModal.addEventListener('click', function() {
+            sosModal.classList.remove('active');
+        });
+        
+        // 弹幕点击事件
+        const danmuItems = document.querySelectorAll('.danmu-item');
+        danmuItems.forEach(item => {
+            item.addEventListener('click', function() {
+                // 跳转到AI助手页面（实际开发中这里应该是页面跳转逻辑）
+                alert('跳转到AI助手页面，询问: ' + this.textContent);
+            });
+        });
+        
+        // 功能入口点击事件
+        const functionItems = document.querySelectorAll('.function-item');
+        functionItems.forEach(item => {
+            item.addEventListener('click', function() {
+                const functionName = this.querySelector('.function-name').textContent;
+                alert('进入' + functionName + '页面');
+            });
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>侨港旅游AI助手 - 商品详情</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            font-size: 14px;
+            line-height: 1.5;
+            max-width: 414px;
+            margin: 0 auto;
+            padding-bottom: 60px; /* 购物车栏的高度 */
+        }
+        
+        /* 头部导航 */
+        .header {
+            background-color: #fff;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .back-btn {
+            font-size: 20px;
+            color: #333;
+            text-decoration: none;
+        }
+        
+        .header-title {
+            flex: 1;
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        /* 商品轮播图 */
+        .product-gallery {
+            width: 100%;
+            height: 300px;
+            position: relative;
+            background-color: #fff;
+        }
+        
+        .gallery-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .gallery-indicator {
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .indicator-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.6);
+            margin: 0 3px;
+        }
+        
+        .indicator-dot.active {
+            background-color: #fff;
+        }
+        
+        /* 商品信息 */
+        .product-info {
+            background-color: #fff;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .product-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+        
+        .product-price {
+            color: #ff6b6b;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .product-price small {
+            font-size: 14px;
+        }
+        
+        .product-tag {
+            display: inline-block;
+            background-color: #fff1f0;
+            color: #ff6b6b;
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 2px;
+            margin-right: 5px;
+        }
+        
+        /* SKU选择区 */
+        .sku-section {
+            background-color: #fff;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .sku-title {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .sku-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .sku-option {
+            border: 1px solid #ddd;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            color: #333;
+        }
+        
+        .sku-option.active {
+            border-color: #0080ff;
+            color: #0080ff;
+            background-color: #f0f8ff;
+        }
+        
+        .sku-desc {
+            font-size: 12px;
+            color: #999;
+            background-color: #f9f9f9;
+            padding: 8px 12px;
+            border-radius: 4px;
+            line-height: 1.6;
+        }
+        
+        /* 商品详情 */
+        .detail-section {
+            background-color: #fff;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .detail-header {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        
+        .detail-tab {
+            font-size: 14px;
+            color: #666;
+            padding: 5px 15px;
+            position: relative;
+        }
+        
+        .detail-tab.active {
+            color: #0080ff;
+        }
+        
+        .detail-tab.active::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            bottom: -2px;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 2px;
+            background-color: #0080ff;
+        }
+        
+        .detail-content {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+        
+        .detail-image {
+            width: 100%;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        
+        /* 底部购买栏 */
+        .purchase-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background-color: #fff;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.1);
+            max-width: 414px;
+            margin: 0 auto;
+            z-index: 90;
+        }
+        
+        .action-btn {
+            width: 50px;
+            text-align: center;
+            color: #666;
+            font-size: 10px;
+            margin-right: 10px;
+        }
+        
+        .action-icon {
+            font-size: 20px;
+            margin-bottom: 2px;
+        }
+        
+        .cart-action {
+            position: relative;
+        }
+        
+        .cart-count {
+            position: absolute;
+            top: -5px;
+            right: 5px;
+            background-color: #ff6b6b;
+            color: white;
+            border-radius: 50%;
+            min-width: 16px;
+            height: 16px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 3px;
+        }
+        
+        .purchase-btn {
+            flex: 1;
+            height: 40px;
+            border: none;
+            border-radius: 20px;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            background-color: #0080ff;
+        }
+        
+        /* 数量选择器按钮 */
+        .quantity-selector {
+            flex: 1;
+            height: 40px;
+            border-radius: 20px;
+            background-color: #0080ff;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 10px;
+            display: none;
+        }
+        
+        .quantity-selector.active {
+            display: flex;
+        }
+        
+        .purchase-btn.inactive {
+            display: none;
+        }
+        
+        .quantity-btn {
+            width: 24px;
+            height: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background-color: transparent;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        
+        .quantity-value {
+            font-size: 16px;
+            font-weight: bold;
+        }
+    </style>
+    <link rel="stylesheet" href="https://at.alicdn.com/t/font_3160431_0msrlcxyj5rh.css">
+</head>
+<body>
+    <!-- 头部导航 -->
+    <div class="header">
+        <a href="shop.html" class="back-btn">←</a>
+        <div class="header-title">商品详情</div>
+    </div>
+    
+    <!-- 商品轮播图 -->
+    <div class="product-gallery">
+        <img src="https://img.alicdn.com/imgextra/i2/2200783455204/O1CN01L15EAa2BUiEiQisBW_!!2200783455204.jpg" alt="侨港灯塔模型" class="gallery-img">
+        <div class="gallery-indicator">
+            <div class="indicator-dot active"></div>
+            <div class="indicator-dot"></div>
+            <div class="indicator-dot"></div>
+        </div>
+    </div>
+    
+    <!-- 商品信息 -->
+    <div class="product-info">
+        <h1 class="product-name">侨港灯塔模型文创摆件手工制作纪念品</h1>
+        <div class="product-price">¥<small>￥</small>68.00</div>
+        <div>
+            <span class="product-tag">包邮</span>
+            <span class="product-tag">正品保障</span>
+            <span class="product-tag">七天无理由退换</span>
+        </div>
+    </div>
+    
+    <!-- SKU选择区 -->
+    <div class="sku-section">
+        <div class="sku-title">规格</div>
+        <div class="sku-options">
+            <div class="sku-option active">小号（10cm）</div>
+            <div class="sku-option">中号（15cm）</div>
+            <div class="sku-option">大号（20cm）</div>
+        </div>
+        <div class="sku-desc">
+            小号（10cm）灯塔模型，适合放置在办公桌、书柜等小型空间，精致小巧，工艺精良。
+        </div>
+    </div>
+    
+    <!-- 商品详情 -->
+    <div class="detail-section">
+        <div class="detail-header">
+            <div class="detail-tab active">商品详情</div>
+            <div class="detail-tab">规格参数</div>
+            <div class="detail-tab">用户评价</div>
+        </div>
+        <div class="detail-content">
+            <p>侨港灯塔模型，匠心打造，精致工艺</p>
+            <img src="https://img.alicdn.com/imgextra/i3/2200783455204/O1CN01AY5aR82BUiEnc8CPz_!!2200783455204.jpg" alt="商品详情图" class="detail-image">
+            <p>灯塔模型采用优质材料制作，色彩鲜明，造型逼真，是收藏和馈赠亲友的理想选择。</p>
+            <img src="https://img.alicdn.com/imgextra/i1/2200783455204/O1CN01bQnkn22BUiEqGBZVz_!!2200783455204.jpg" alt="商品详情图" class="detail-image">
+            <p>每一个灯塔模型都由专业工匠手工打造，保证每一个细节都完美呈现。</p>
+        </div>
+    </div>
+    
+    <!-- 底部购买栏 -->
+    <div class="purchase-bar">
+        <div class="action-btn">
+            <div class="action-icon">🏠</div>
+            <div>首页</div>
+        </div>
+        <div class="action-btn cart-action">
+            <div class="action-icon">🛒</div>
+            <div>购物车</div>
+            <div class="cart-count">2</div>
+        </div>
+        <button class="purchase-btn" id="purchaseBtn">立即购买</button>
+        <div class="quantity-selector" id="quantitySelector">
+            <button class="quantity-btn" id="minusBtn">-</button>
+            <div class="quantity-value" id="quantityValue">1</div>
+            <button class="quantity-btn" id="plusBtn">+</button>
+        </div>
+    </div>
+    
+    <script>
+        // SKU选择
+        const skuOptions = document.querySelectorAll('.sku-option');
+        const skuDesc = document.querySelector('.sku-desc');
+        
+        const skuDescriptions = {
+            '小号（10cm）': '小号（10cm）灯塔模型，适合放置在办公桌、书柜等小型空间，精致小巧，工艺精良。',
+            '中号（15cm）': '中号（15cm）灯塔模型，适合放置在茶几、展示柜等中型空间，细节丰富，立体感强。',
+            '大号（20cm）': '大号（20cm）灯塔模型，适合作为客厅、会议室等大型空间的装饰品，气势磅礴，视觉震撼。'
+        };
+        
+        skuOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                // 移除所有active类
+                skuOptions.forEach(opt => opt.classList.remove('active'));
+                // 添加active类到当前点击项
+                this.classList.add('active');
+                // 更新SKU描述
+                const skuText = this.textContent;
+                skuDesc.textContent = skuDescriptions[skuText] || '';
+            });
+        });
+        
+        // 详情Tab切换
+        const detailTabs = document.querySelectorAll('.detail-tab');
+        detailTabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                // 移除所有active类
+                detailTabs.forEach(t => t.classList.remove('active'));
+                // 添加active类到当前点击项
+                this.classList.add('active');
+                // 这里可以添加切换内容的逻辑
+            });
+        });
+        
+        // 购买按钮和数量选择器
+        const purchaseBtn = document.getElementById('purchaseBtn');
+        const quantitySelector = document.getElementById('quantitySelector');
+        const minusBtn = document.getElementById('minusBtn');
+        const plusBtn = document.getElementById('plusBtn');
+        const quantityValue = document.getElementById('quantityValue');
+        
+        purchaseBtn.addEventListener('click', function() {
+            purchaseBtn.classList.add('inactive');
+            quantitySelector.classList.add('active');
+        });
+        
+        plusBtn.addEventListener('click', function() {
+            let value = parseInt(quantityValue.textContent);
+            quantityValue.textContent = value + 1;
+        });
+        
+        minusBtn.addEventListener('click', function() {
+            let value = parseInt(quantityValue.textContent);
+            if (value > 1) {
+                quantityValue.textContent = value - 1;
+            } else {
+                // 如果数量减到0，恢复购买按钮
+                purchaseBtn.classList.remove('inactive');
+                quantitySelector.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html> 
